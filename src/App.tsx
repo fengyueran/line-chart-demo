@@ -1,25 +1,30 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useRef } from 'react';
+import styled from 'styled-components';
+
+const Container = styled.div`
+  margin: 100px;
+  display: flex;
+  justify-content: center;
+`;
 
 function App() {
+  const ref = useRef(null);
+  useEffect(() => {
+    const ctx = (ref.current! as any).getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(300, 150);
+    ctx.stroke();
+  }, []);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container>
+      <canvas
+        ref={ref}
+        width="600"
+        height="400"
+        style={{ border: '1px solid #d3d3d3' }}
+      ></canvas>
+    </Container>
   );
 }
 
