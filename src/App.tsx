@@ -25,6 +25,18 @@ const Container = styled.div`
     stroke: red;
     stroke-width: 3;
   }
+  .tooltip {
+    font-size: 15px;
+    width: auto;
+    padding: 10px;
+    height: auto;
+    background-color: #000000;
+    opacity: 0.6;
+    border-radius: 5px;
+    color: #ffffff;
+    display: none;
+    position: fixed;
+  }
 `;
 
 const Canvas = styled.div`
@@ -71,6 +83,15 @@ const drawLine = (vline: any, index: number, xInterval: number) => {
     .attr('x1', index * xInterval)
     .attr('x2', index * xInterval)
     .attr('stroke-opacity', 1);
+};
+
+const drawTooltip = (tooltip: any, str: any, x: number, y: number) => {
+  tooltip
+    .html(str)
+    .style('display', 'inline-block')
+    .style('opacity', 0.6)
+    .style('left', `${x}px`)
+    .style('top', `${y}px`);
 };
 
 const drawCurveWithD3 = (
@@ -163,8 +184,13 @@ const drawCurveWithD3 = (
     .attr('y2', yScale(0))
     .attr('stroke-opacity', 0);
 
-  const plotArea = { height: yScale(0), xInterval: xScale(1), vline };
-  return plotArea;
+  var tooltip = d3
+    .select('#container')
+    .append('div')
+    .attr('class', 'tooltip')
+    .style('opacity', 0);
+
+  return { height: yScale(0), xInterval: xScale(1), vline, tooltip };
 };
 
 const canvasMargin = { top: 50, right: 50, bottom: 50, left: 50 };
@@ -179,17 +205,20 @@ function App() {
   const plotAreaRef = useRef<{ height: number; xInterval: number }>();
   const vLineRef =
     useRef<d3.Selection<SVGLineElement, unknown, HTMLElement, any>>();
+  const tooltipRef =
+    useRef<d3.Selection<HTMLDivElement, unknown, HTMLElement, any>>();
 
   useEffect(() => {
     const canvas = ref.current! as HTMLCanvasElement;
     const box = canvas.getBoundingClientRect();
     canvasRectRef.current = box;
-    const { vline, ...res } = drawCurveWithD3(
+    const { vline, tooltip, ...res } = drawCurveWithD3(
       dataset,
       canvasRectRef.current,
       canvasMargin
     );
     vLineRef.current = vline;
+    tooltipRef.current = tooltip;
     plotAreaRef.current = res;
   }, []);
 
@@ -199,10 +228,16 @@ function App() {
       margin: canvasMargin,
     });
     drawLine(vLineRef.current, selectedIndex, plotAreaRef.current!.xInterval);
+    drawTooltip(
+      tooltipRef.current,
+      dataset[selectedIndex][0],
+      e.pageX,
+      e.pageY
+    );
   }, []);
 
   return (
-    <Container>
+    <Container id="container">
       <Canvas
         id="canvas"
         ref={ref}
